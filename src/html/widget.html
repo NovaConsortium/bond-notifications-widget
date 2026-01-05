@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notification Setup</title>
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/lib/index.iife.min.js" as="script">
+  <script>window.solanaReady = false;</script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/lib/index.iife.min.js" onload="window.solanaReady = true; if (typeof solanaWeb3 !== 'undefined') window.solanaWeb3 = solanaWeb3;"></script>
+  <style>
+    .icon {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex-shrink: 0;
+    }
+    .icon-lg {
+      width: 32px;
+      height: 32px;
+    }
+    .icon-xl {
+      width: 56px;
+      height: 56px;
+      stroke-width: 1.5;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .loader-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: currentColor;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      color: #e0e0e0;
+    }
+    body {
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 100%;
+      width: 100%;
+      margin: 0;
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid #333;
+      box-sizing: border-box;
+    }
+    h1 { 
+      color: #ffd700; 
+      margin-bottom: 1.5rem; 
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    h2 {
+      color: #ffd700;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    h3 {
+      color: #e0e0e0;
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #333;
+    }
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: #ffd700;
+      color: #1a1a1a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step-title {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .step { 
+      display: none; 
+      padding: 0;
+      margin: 0;
+    }
+    .step.active { 
+      display: block; 
+      padding: 0;
+      margin: 0;
+    }
+    .form-group { 
+      margin-bottom: 20px; 
+      padding: 0;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    label { 
+      display: block; 
+      margin-bottom: 8px; 
+      font-weight: 500; 
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #252525;
+      color: #e0e0e0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #ffd700;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+    }
+    input::placeholder {
+      color: #666;
+    }
+    input[readonly] {
+      background: #1f1f1f;
+      color: #888;
+      cursor: not-allowed;
+    }
+    button {
+      background: #ffd700;
+      color: #1a1a1a;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    button:hover { 
+      background: #ffe44d;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled { 
+      background: #3a3a3a; 
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    button.secondary {
+      background: #2a2a2a;
+      color: #ccc;
+      border: 1px solid #444;
+    }
+    button.secondary:hover {
+      background: #333;
+      border-color: #555;
+    }
+    .btn-group { 
+      display: flex; 
+      gap: 12px; 
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #333;
+    }
+    .error { 
+      color: #ff6b6b; 
+      margin-top: 0.5rem; 
+      font-size: 0.9rem; 
+    }
+    .success { 
+      color: #4ade80; 
+      margin-top: 0.5rem; 
+    }
+    .channel-option { 
+      margin: 10px 0; 
+      padding: 14px 16px; 
+      border: 1px solid #333; 
+      border-radius: 10px; 
+      background: #222;
+      transition: all 0.2s ease;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .channel-option:hover {
+      border-color: #444;
+      background: #282828;
+    }
+    .channel-option.selected {
+      border-color: #ffd700;
+      background: rgba(255, 215, 0, 0.08);
+    }
+    .channel-option label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      user-select: none;
+    }
+    .channel-option input[type="checkbox"] { 
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    .channel-option .custom-checkbox {
+      position: relative;
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border: 2px solid #555;
+      border-radius: 5px;
+      background: #1a1a1a;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .channel-option input[type="checkbox"]:checked + .custom-checkbox {
+      background: #ffd700;
+      border-color: #ffd700;
+    }
+    .channel-option input[type="checkbox"]:checked + .custom-checkbox::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 5px;
+      height: 10px;
+      border: solid #1a1a1a;
+      border-width: 0 2.5px 2.5px 0;
+      transform: rotate(45deg);
+    }
+    .channel-option .custom-checkbox:hover {
+      border-color: #ffd700;
+    }
+    .channel-option input[type="checkbox"]:checked + .custom-checkbox:hover {
+      background: #ffe44d;
+      border-color: #ffe44d;
+    }
+    .channel-option label span:last-child {
+      color: #ccc;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+    }
+    .channel-option input[type="checkbox"]:checked ~ span:last-child {
+      color: #ffd700;
+    }
+    .channel-option input[type="checkbox"]:disabled + .custom-checkbox {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #1a1a1a;
+      border-color: #444;
+    }
+    .channel-option input[type="checkbox"]:disabled ~ span:last-child {
+      color: #666;
+    }
+    .channel-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .loading { 
+      text-align: center; 
+      padding: 2rem; 
+      color: #e0e0e0;
+    }
+    #verificationContent {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #333;
+    }
+    #allVerified {
+      background: linear-gradient(135deg, #1a3a1a 0%, #1f3f1f 100%);
+      padding: 28px;
+      border-radius: 12px;
+      border: 1px solid #4ade80;
+      text-align: center;
+    }
+    #allVerified h2 {
+      color: #4ade80;
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+    }
+    #allVerified p {
+      color: #bbb;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+    strong {
+      color: #ffd700;
+    }
+    .input-with-btn {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .input-with-btn input {
+      flex: 1;
+    }
+    .input-with-btn button {
+      flex-shrink: 0;
+      padding: 12px 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="step1" class="step">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <div class="step-title">Bond Address</div>
+      </div>
+      <div class="form-group">
+        <label>Enter your bond address</label>
+        <input type="text" id="bondAddress" placeholder="Enter bond address" />
+        <div id="bondAutoFill" class="success" style="display:none; font-size:0.85rem; margin-top: 8px;">✓ Automatically derived from validator</div>
+        <div id="bondError" class="error"></div>
+      </div>
+      <div class="btn-group">
+        <button onclick="handleStep1()">Continue</button>
+      </div>
+    </div>
+    
+    <div id="step2" class="step active">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <div class="step-title">Set Alert Threshold</div>
+      </div>
+      <div class="form-group">
+        <label>Notify me when balance drops below (SOL)</label>
+        <input type="number" id="threshold" step="0.1" min="0.1" placeholder="e.g., 1.5" />
+        <div id="thresholdError" class="error"></div>
+      </div>
+      <div class="btn-group">
+        <button onclick="handleStep2()">Continue</button>
+      </div>
+    </div>
+    
+    <div id="step3" class="step">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <div class="step-title">Choose Notification Method</div>
+      </div>
+      <div class="form-group">
+        <label>Select how you want to be notified</label>
+        <div class="channel-option" id="emailOption">
+          <label>
+            <input type="checkbox" id="chEmail" onchange="toggleChannel('email')" />
+            <span class="custom-checkbox"></span>
+            <svg class="icon" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <span>Email</span>
+          </label>
+          <input type="email" id="emailValue" placeholder="your@email.com" style="display:none; margin-top:12px;" oninput="checkDuplicate('email')" />
+          <div id="emailDuplicateWarning" class="error" style="display:none; margin-top:8px; font-size:0.85rem;"></div>
+        </div>
+        <div class="channel-option" id="smsOption">
+          <label>
+            <input type="checkbox" id="chSMS" onchange="toggleChannel('sms')" />
+            <span class="custom-checkbox"></span>
+            <svg class="icon" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+            <span>SMS</span>
+          </label>
+          <input type="tel" id="smsValue" placeholder="+1234567890" style="display:none; margin-top:12px;" oninput="checkDuplicate('sms')" />
+          <div id="smsDuplicateWarning" class="error" style="display:none; margin-top:8px; font-size:0.85rem;"></div>
+        </div>
+        <div class="channel-option disabled" id="discordOption" style="opacity: 0.5; cursor: not-allowed;">
+          <label>
+            <input type="checkbox" id="chDiscord" onchange="toggleChannel('discord')" disabled />
+            <span class="custom-checkbox"></span>
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Discord (Soon)</span>
+          </label>
+        </div>
+        <div class="channel-option" id="telegramOption">
+          <label>
+            <input type="checkbox" id="chTelegram" onchange="toggleChannel('telegram')" />
+            <span class="custom-checkbox"></span>
+            <svg class="icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            <span>Telegram</span>
+          </label>
+        </div>
+        <div id="channelsError" class="error"></div>
+      </div>
+      <div class="btn-group">
+        <button onclick="goToStep(2)" class="secondary">Back</button>
+        <button onclick="handleStep3()">Subscribe</button>
+      </div>
+    </div>
+    
+    <div id="step4" class="step">
+      <div class="loading" style="padding: 40px 20px; text-align: center;">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" style="margin: 0 auto 12px; display: block; color: #ffd700; animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <p style="color: #aaa;">Setting up your subscription</p>
+      </div>
+    </div>
+    
+    <div id="step5" class="step">
+      <div id="verificationContent">
+        <div class="step-header" style="border-bottom: none; margin-bottom: 16px; padding-bottom: 0;">
+          <div class="step-number">3</div>
+          <div class="step-title">Verify Your Channels</div>
+        </div>
+        <div id="telegramVerification" style="display:none; margin: 16px 0; padding: 16px; border: 1px solid #333; border-radius: 10px; background: #1f1f1f;">
+          <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><svg class="icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Telegram Verification</h3>
+          <p style="color: #999; font-size: 0.9rem; margin-bottom: 8px;">1. Click the button below to open the Telegram bot</p>
+          <p style="color: #999; font-size: 0.9rem; margin-bottom: 12px;">2. Send <strong>/verify <span id="telegramCode"></span></strong> to the bot</p>
+          <button id="openTelegramBtn" onclick="openTelegramBot()" style="width: 100%;">Open Telegram Bot</button>
+          <p id="telegramStatus" style="margin-top: 12px; font-size: 0.9rem;"></p>
+        </div>
+        <div id="discordVerification" style="display:none; margin: 16px 0; padding: 16px; border: 1px solid #333; border-radius: 10px; background: #1f1f1f;">
+          <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Discord Verification</h3>
+          <p style="color: #999; font-size: 0.9rem; margin-bottom: 12px;">Click the button below to authorize with Discord</p>
+          <button id="openDiscordBtn" onclick="openDiscordAuth()" style="width: 100%;">Connect Discord</button>
+          <p id="discordStatus" style="margin-top: 12px; font-size: 0.9rem;"></p>
+        </div>
+        <div id="emailVerification" style="display:none; margin: 16px 0; padding: 16px; border: 1px solid #333; border-radius: 10px; background: #1f1f1f;">
+          <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><svg class="icon" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Email Verification</h3>
+          <p style="color: #999; font-size: 0.9rem; margin-bottom: 12px;">Enter the 6-digit code sent to your email</p>
+          <div class="input-with-btn">
+            <input type="text" id="emailVerificationCode" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 4px; font-size: 1.1rem;" />
+            <button onclick="verifyEmail()">Verify</button>
+          </div>
+          <p id="emailStatus" style="margin-top: 12px; font-size: 0.9rem;"></p>
+        </div>
+        <div id="smsVerification" style="display:none; margin: 16px 0; padding: 16px; border: 1px solid #333; border-radius: 10px; background: #1f1f1f;">
+          <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><svg class="icon" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> SMS Verification</h3>
+          <p style="color: #999; font-size: 0.9rem; margin-bottom: 12px;">Enter the 6-digit code sent to your phone</p>
+          <div class="input-with-btn">
+            <input type="text" id="smsVerificationCode" placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 4px; font-size: 1.1rem;" />
+            <button onclick="verifySMS()">Verify</button>
+          </div>
+          <p id="smsStatus" style="margin-top: 12px; font-size: 0.9rem;"></p>
+        </div>
+      </div>
+      <div id="allVerified" style="display:none;">
+        <svg class="icon icon-xl" viewBox="0 0 24 24" style="margin: 0 auto 16px; display: block; color: #4ade80;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+        <h2>All Set!</h2>
+        <p>Your notification subscription is now active.</p>
+        <p style="color: #888; font-size: 0.9rem;">You'll be notified when your balance drops below the threshold.</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    {{BOND_ADDRESS_SCRIPT}}
+    
+    function sendHeightToParent() {
+      if (window.parent !== window) {
+        const bodyPadding = 20;
+        const container = document.querySelector('.container');
+        
+        let height = 200; // minimum
+        
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          height = Math.ceil(containerRect.height + (bodyPadding * 2));
+        }
+        
+        height = Math.max(height, 200);
+        
+        window.parent.postMessage({ 
+          type: 'widget-height', 
+          height: height 
+        }, '*');
+      }
+    }
+    
+    sendHeightToParent();
+    setTimeout(sendHeightToParent, 10);
+    
+    window.addEventListener('load', () => {
+      sendHeightToParent();
+    });
+    
+    const observer = new MutationObserver(() => {
+      setTimeout(sendHeightToParent, 50);
+    });
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+    
+    const originalGoToStep = window.goToStep;
+    if (typeof originalGoToStep === 'function') {
+      window.goToStep = function(step) {
+        originalGoToStep(step);
+        setTimeout(sendHeightToParent, 150);
+      };
+    }
+    
+    let currentStep = 2;
+    let bondAddress = '';
+    let threshold = '';
+    let selectedChannels = [];
+    let subscriptionId = null;
+    let telegramVerificationCode = null;
+    let telegramBotUrl = null;
+    let discordOAuthUrl = null;
+    let emailChannelId = null;
+    let smsChannelId = null;
+    let discordChannelId = null;
+    let telegramChannelId = null;
+    let verificationCheckInterval = null;
+    const apiBase = '{{API_BASE}}';
+    
+    (async function init() {
+      let retries = 0;
+      while (!window.solanaReady && retries < 30) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        retries++;
+      }
+      
+      if (typeof window.solanaWeb3 === 'undefined') {
+        if (typeof solanaWeb3 !== 'undefined') {
+          window.solanaWeb3 = solanaWeb3;
+        } else if (typeof window.solana !== 'undefined') {
+          window.solanaWeb3 = window.solana;
+        }
+      }
+      
+      if (typeof window.solanaWeb3 === 'undefined') {
+        console.error('Solana library failed to load');
+        goToStep(2);
+        return;
+      }
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const pathname = window.location.pathname;
+      
+      let voteKey = null;
+      const pathParts = pathname.split('/').filter(Boolean);
+      
+      // Check if last path segment looks like a Solana address (32-44 chars)
+      if (pathParts.length > 0) {
+        const lastSegment = pathParts[pathParts.length - 1];
+        if (!['widget', 'validator', 'index.html', ''].includes(lastSegment) && lastSegment.length >= 32 && lastSegment.length <= 44) {
+          if (isValidAddress(lastSegment)) {
+            voteKey = lastSegment;
+          }
+        }
+      }
+      
+      if (!voteKey) {
+        voteKey = urlParams.get('vote') || window.VOTE_KEY;
+      }
+      
+      if (voteKey && isValidAddress(voteKey)) {
+        try {
+          const derivedBond = await getBondAddressFromValidator(voteKey);
+          const bondInput = document.getElementById('bondAddress');
+          if (bondInput) {
+            bondInput.value = derivedBond;
+            bondInput.readOnly = true;
+            bondInput.style.backgroundColor = '#f5f5f5';
+            bondInput.style.cursor = 'not-allowed';
+            const autoFillMsg = document.getElementById('bondAutoFill');
+            if (autoFillMsg) autoFillMsg.style.display = 'block';
+            bondAddress = derivedBond;
+            sendHeightToParent();
+          }
+        } catch (error) {
+          console.error('Failed to derive bond address:', error);
+          goToStep(1);
+        }
+      } else {
+        goToStep(1);
+      }
+      
+      if (urlParams.get('discord_verified') === 'true' || urlParams.get('discord_bot_added') === 'true') {
+        if (currentStep === 5 && subscriptionId) {
+          setTimeout(() => {
+            checkVerificationStatus();
+          }, 1000);
+        }
+      }
+    })();
+    
+    function openTelegramBot() {
+      if (telegramBotUrl) {
+        window.open(telegramBotUrl, '_blank');
+      }
+    }
+    
+    function openDiscordAuth() {
+      if (discordOAuthUrl) {
+        window.open(discordOAuthUrl, '_blank');
+      }
+    }
+    
+    async function checkVerificationStatus() {
+      if (!subscriptionId || !bondAddress) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(apiBase + '/subscription/' + subscriptionId + '/channels');
+        if (response.ok) {
+          const data = await response.json();
+          const channels = data.channels || [];
+          
+          const telegramChannel = channels.find(c => c.type === 'telegram');
+          const discordChannel = channels.find(c => c.type === 'discord');
+          const emailChannel = channels.find(c => c.type === 'email');
+          const smsChannel = channels.find(c => c.type === 'sms');
+          
+          const isChannelVerified = (c) => c && (c.is_verified === true || c.is_verified === 'true');
+          
+          if (telegramChannel) {
+            const telegramEl = document.getElementById('telegramVerification');
+            const telegramStatus = document.getElementById('telegramStatus');
+            if (isChannelVerified(telegramChannel)) {
+              telegramStatus.innerHTML = '<span style="color: #4ade80;">✅ Telegram verified!</span>';
+              telegramEl.style.opacity = '0.6';
+            } else {
+              telegramStatus.innerHTML = '<span style="color: #ffa500;"><span class="loader-dot"></span> Waiting for verification...</span>';
+            }
+          }
+          
+          if (discordChannel) {
+            const discordEl = document.getElementById('discordVerification');
+            const discordStatus = document.getElementById('discordStatus');
+            if (isChannelVerified(discordChannel)) {
+              discordStatus.innerHTML = '<span style="color: #4ade80;">✅ Discord verified!</span>';
+              discordEl.style.opacity = '0.6';
+            } else {
+              discordStatus.innerHTML = '<span style="color: #ffa500;"><span class="loader-dot"></span> Waiting for authorization...</span>';
+            }
+          }
+          
+          if (emailChannel) {
+            const emailEl = document.getElementById('emailVerification');
+            const emailStatus = document.getElementById('emailStatus');
+            if (isChannelVerified(emailChannel)) {
+              if (!emailStatus.innerHTML.includes('✅')) {
+                emailStatus.innerHTML = '<span style="color: #4ade80;">✅ Email verified!</span>';
+              }
+              emailEl.style.opacity = '0.6';
+            } else {
+              if (!emailStatus.innerHTML) {
+                emailStatus.innerHTML = '<span style="color: #ffa500;"><span class="loader-dot"></span> Enter verification code from your email</span>';
+              }
+            }
+          }
+          
+          if (smsChannel) {
+            const smsEl = document.getElementById('smsVerification');
+            const smsStatus = document.getElementById('smsStatus');
+            if (isChannelVerified(smsChannel)) {
+              if (!smsStatus.innerHTML.includes('✅')) {
+                smsStatus.innerHTML = '<span style="color: #4ade80;">✅ SMS verified!</span>';
+              }
+              smsEl.style.opacity = '0.6';
+            } else {
+              if (!smsStatus.innerHTML) {
+                smsStatus.innerHTML = '<span style="color: #ffa500;"><span class="loader-dot"></span> Enter verification code from your phone</span>';
+              }
+            }
+          }
+          
+          const selectedChannelTypes = [...new Set(selectedChannels.map(c => c.type))];
+          
+          const channelIdsToCheck = [];
+          if (selectedChannelTypes.includes('email') && emailChannelId) {
+            channelIdsToCheck.push({ id: emailChannelId, type: 'email' });
+          }
+          if (selectedChannelTypes.includes('sms') && smsChannelId) {
+            channelIdsToCheck.push({ id: smsChannelId, type: 'sms' });
+          }
+          if (selectedChannelTypes.includes('discord') && discordChannelId) {
+            channelIdsToCheck.push({ id: discordChannelId, type: 'discord' });
+          }
+          if (selectedChannelTypes.includes('telegram') && telegramChannelId) {
+            channelIdsToCheck.push({ id: telegramChannelId, type: 'telegram' });
+          }
+          
+          const matchedChannels = [];
+          const matchedTypes = new Set();
+          
+          channelIdsToCheck.forEach(({ id, type }) => {
+            let channel = channels.find(c => c.id === id);
+            if (channel) {
+              matchedChannels.push(channel);
+              matchedTypes.add(type);
+            } else {
+              const verifiedChannelsOfType = channels.filter(c => c.type === type && isChannelVerified(c));
+              if (verifiedChannelsOfType.length > 0) {
+                channel = verifiedChannelsOfType[verifiedChannelsOfType.length - 1];
+                matchedChannels.push(channel);
+                matchedTypes.add(type);
+              }
+            }
+          });
+          
+          selectedChannelTypes.forEach(type => {
+            if (!matchedTypes.has(type)) {
+              const verifiedChannelsOfType = channels.filter(c => c.type === type && isChannelVerified(c));
+              if (verifiedChannelsOfType.length > 0) {
+                const channel = verifiedChannelsOfType[verifiedChannelsOfType.length - 1];
+                matchedChannels.push(channel);
+                matchedTypes.add(type);
+              }
+            }
+          });
+          
+          const allSelectedTypesMatched = selectedChannelTypes.every(type => matchedTypes.has(type));
+          const allMatchedChannelsVerified = matchedChannels.length > 0 && matchedChannels.every(c => isChannelVerified(c));
+          const allChannelsVerified = selectedChannelTypes.length > 0 && 
+                                     allSelectedTypesMatched &&
+                                     allMatchedChannelsVerified;
+          
+          if (!allChannelsVerified && selectedChannelTypes.length > 0) {
+            const allTypesHaveVerified = selectedChannelTypes.every(type => {
+              return channels.some(c => c.type === type && isChannelVerified(c));
+            });
+            
+            if (allTypesHaveVerified) {
+              const verifiedChannelsForSelectedTypes = selectedChannelTypes.map(type => {
+                return channels.find(c => c.type === type && isChannelVerified(c));
+              }).filter(Boolean);
+              
+              if (verifiedChannelsForSelectedTypes.length === selectedChannelTypes.length) {
+                showSuccessScreen();
+                return;
+              }
+            }
+          }
+          
+          if (allChannelsVerified) {
+            showSuccessScreen();
+          }
+        } else {
+          console.error('Failed to fetch subscription:', response.status, await response.text());
+        }
+      } catch (error) {
+        console.error('Error checking verification status:', error);
+      }
+    }
+    
+    function showSuccessScreen() {
+      if (verificationCheckInterval) {
+        clearInterval(verificationCheckInterval);
+        verificationCheckInterval = null;
+      }
+      
+      goToStep(5);
+      
+      setTimeout(() => {
+        const verificationContent = document.getElementById('verificationContent');
+        const allVerified = document.getElementById('allVerified');
+        
+        if (verificationContent) {
+          verificationContent.style.display = 'none';
+        }
+        
+        if (allVerified) {
+          allVerified.style.display = 'block';
+          allVerified.style.visibility = 'visible';
+          allVerified.style.opacity = '1';
+          allVerified.style.position = 'relative';
+          
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+          sendHeightToParent();
+          setTimeout(sendHeightToParent, 100);
+          setTimeout(sendHeightToParent, 300);
+        }
+        
+        setTimeout(() => {
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'close-widget' }, '*');
+          }
+        }, 5000);
+      }, 50);
+    }
+    
+    function setupVerification(discordChannel, telegramChannel, allChannels) {
+      if (telegramChannel && telegramVerificationCode) {
+        document.getElementById('telegramVerification').style.display = 'block';
+        document.getElementById('telegramCode').textContent = telegramVerificationCode;
+      }
+      
+      if (discordChannel) {
+        document.getElementById('discordVerification').style.display = 'block';
+        if (!discordOAuthUrl) {
+          fetch(apiBase + '/auth/discord/url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription_id: subscriptionId })
+          }).then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+          }).then(data => {
+            if (data && data.url) {
+              discordOAuthUrl = data.url;
+            }
+          }).catch(error => {
+            console.error('Discord OAuth error:', error);
+          });
+        }
+      }
+      
+      const emailChannel = allChannels.find(c => c.type === 'email');
+      if (emailChannel && emailChannelId) {
+        document.getElementById('emailVerification').style.display = 'block';
+      }
+      
+      const smsChannel = allChannels.find(c => c.type === 'sms');
+      if (smsChannel && smsChannelId) {
+        document.getElementById('smsVerification').style.display = 'block';
+      }
+      
+      setTimeout(sendHeightToParent, 50);
+      setTimeout(sendHeightToParent, 200);
+      
+      verificationCheckInterval = setInterval(checkVerificationStatus, 2000);
+      checkVerificationStatus();
+    }
+    
+    async function verifyEmail() {
+      const code = document.getElementById('emailVerificationCode').value.trim();
+      const statusEl = document.getElementById('emailStatus');
+      
+      if (!code || code.length !== 6) {
+        statusEl.innerHTML = '<span style="color: #ff6b6b;">Please enter a 6-digit code</span>';
+        return;
+      }
+      
+      if (!emailChannelId) {
+        statusEl.innerHTML = '<span style="color: #ff6b6b;">Email channel not found</span>';
+        return;
+      }
+      
+      statusEl.innerHTML = '<span style="color: #ffa500;">Verifying...</span>';
+      
+      try {
+        const response = await fetch(apiBase + '/verify/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: code,
+            channel_id: emailChannelId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          statusEl.innerHTML = '<span style="color: #4ade80;">✅ Email verified!</span>';
+          const emailEl = document.getElementById('emailVerification');
+          if (emailEl) emailEl.style.opacity = '0.6';
+          // Clear the input
+          document.getElementById('emailVerificationCode').value = '';
+          
+          // Check verification status immediately and then retry a few times
+          // to ensure database has updated
+          let retries = 0;
+          const maxRetries = 5;
+          
+          const checkWithRetry = async () => {
+            await checkVerificationStatus();
+            retries++;
+            if (retries < maxRetries) {
+              setTimeout(checkWithRetry, 500);
+            }
+          };
+          
+          // Start checking immediately, then retry if needed
+          setTimeout(checkWithRetry, 200);
+        } else {
+          statusEl.innerHTML = '<span style="color: #ff6b6b;">❌ ' + (data.error || 'Verification failed') + '</span>';
+        }
+      } catch (error) {
+        statusEl.innerHTML = '<span style="color: #ff6b6b;">❌ Error: ' + error.message + '</span>';
+      }
+    }
+    
+    async function verifySMS() {
+      const code = document.getElementById('smsVerificationCode').value.trim();
+      const statusEl = document.getElementById('smsStatus');
+      
+      if (!code || code.length !== 6) {
+        statusEl.innerHTML = '<span style="color: #ff6b6b;">Please enter a 6-digit code</span>';
+        return;
+      }
+      
+      if (!smsChannelId) {
+        statusEl.innerHTML = '<span style="color: #ff6b6b;">SMS channel not found</span>';
+        return;
+      }
+      
+      statusEl.innerHTML = '<span style="color: #ffa500;">Verifying...</span>';
+      
+      try {
+        const response = await fetch(apiBase + '/verify/twilio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: code,
+            channel_id: smsChannelId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          statusEl.innerHTML = '<span style="color: #4ade80;">✅ SMS verified!</span>';
+          const smsEl = document.getElementById('smsVerification');
+          if (smsEl) smsEl.style.opacity = '0.6';
+          // Clear the input
+          document.getElementById('smsVerificationCode').value = '';
+          
+          // Check verification status immediately and then retry a few times
+          // to ensure database has updated
+          let retries = 0;
+          const maxRetries = 5;
+          
+          const checkWithRetry = async () => {
+            await checkVerificationStatus();
+            retries++;
+            if (retries < maxRetries) {
+              setTimeout(checkWithRetry, 500);
+            }
+          };
+          
+          // Start checking immediately, then retry if needed
+          setTimeout(checkWithRetry, 200);
+        } else {
+          statusEl.innerHTML = '<span style="color: #ff6b6b;">❌ ' + (data.error || 'Verification failed') + '</span>';
+        }
+      } catch (error) {
+        statusEl.innerHTML = '<span style="color: #ff6b6b;">❌ Error: ' + error.message + '</span>';
+      }
+    }
+    
+    function goToStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step' + step).classList.add('active');
+      currentStep = step;
+      if (window.sendHeightToParent) {
+        setTimeout(window.sendHeightToParent, 150);
+      }
+    }
+    
+    function handleStep1() {
+      const addr = document.getElementById('bondAddress').value.trim();
+      const errorEl = document.getElementById('bondError');
+      
+      if (!addr) {
+        errorEl.textContent = 'Bond address is required';
+        return;
+      }
+      
+      if (!isValidAddress(addr)) {
+        errorEl.textContent = 'Invalid Solana address';
+        return;
+      }
+      
+      errorEl.textContent = '';
+      bondAddress = addr;
+      goToStep(2);
+    }
+    
+    function handleStep2() {
+      const thresh = parseFloat(document.getElementById('threshold').value);
+      const errorEl = document.getElementById('thresholdError');
+      
+      if (!thresh || thresh <= 0) {
+        errorEl.textContent = 'Threshold must be a positive number';
+        return;
+      }
+      
+      errorEl.textContent = '';
+      threshold = thresh;
+      goToStep(3);
+    }
+    
+    async function checkDuplicate(type) {
+      if (!bondAddress || (type !== 'email' && type !== 'sms')) {
+        return;
+      }
+      
+      const valueInput = document.getElementById(type + 'Value');
+      const warningEl = document.getElementById(type + 'DuplicateWarning');
+      const checkbox = document.getElementById(type === 'email' ? 'chEmail' : 'chSMS');
+      const optionEl = document.getElementById(type === 'email' ? 'emailOption' : 'smsOption');
+      
+      if (!valueInput || !warningEl || !checkbox) {
+        return;
+      }
+      
+      const value = valueInput.value.trim();
+      
+      if (!value) {
+        warningEl.style.display = 'none';
+        warningEl.textContent = '';
+        checkbox.disabled = false;
+        if (optionEl) {
+          optionEl.style.opacity = '1';
+          optionEl.style.cursor = 'pointer';
+        }
+        return;
+      }
+      
+      let isValid = false;
+      if (type === 'email') {
+        isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      } else if (type === 'sms') {
+        const phoneRegex = new RegExp('^\\+?[1-9]\\d{1,14}$');
+        isValid = phoneRegex.test(value);
+      }
+      
+      if (!isValid) {
+        warningEl.style.display = 'none';
+        checkbox.disabled = false;
+        if (optionEl) {
+          optionEl.style.opacity = '1';
+          optionEl.style.cursor = 'pointer';
+        }
+        return;
+      }
+      
+      try {
+        const response = await fetch(apiBase + '/check-duplicate/' + encodeURIComponent(bondAddress) + '?type=' + type + '&value=' + encodeURIComponent(value));
+        const data = await response.json();
+        
+        if (data.isDuplicate) {
+          const message = data.isVerified 
+            ? '⚠️ This ' + type + ' is already verified for this validator. Please use a different ' + type + '.'
+            : '⚠️ This ' + type + ' is already added for this validator. Please use a different ' + type + '.';
+          
+          warningEl.textContent = message;
+          warningEl.style.display = 'block';
+          
+          // Disable checkbox and uncheck it
+          checkbox.disabled = true;
+          checkbox.checked = false;
+          
+          selectedChannels = selectedChannels.filter(c => c.type !== type);
+          
+          if (valueInput) {
+            valueInput.value = '';
+          }
+          
+          if (optionEl) {
+            optionEl.style.opacity = '0.5';
+            optionEl.style.cursor = 'not-allowed';
+            optionEl.classList.remove('selected');
+            optionEl.classList.add('disabled');
+          }
+          
+          const errorEl = document.getElementById('channelsError');
+          if (errorEl) {
+            errorEl.textContent = message;
+          }
+          
+          setTimeout(sendHeightToParent, 50);
+        } else {
+          warningEl.style.display = 'none';
+          warningEl.textContent = '';
+          checkbox.disabled = false;
+          if (optionEl) {
+            optionEl.style.opacity = '1';
+            optionEl.style.cursor = 'pointer';
+            optionEl.classList.remove('disabled');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking duplicate:', error);
+        warningEl.style.display = 'none';
+        checkbox.disabled = false;
+        if (optionEl) {
+          optionEl.style.opacity = '1';
+          optionEl.style.cursor = 'pointer';
+        }
+      }
+    }
+    
+    function toggleChannel(type) {
+      const checkboxIdMap = {
+        'email': 'chEmail',
+        'sms': 'chSMS',
+        'discord': 'chDiscord',
+        'telegram': 'chTelegram'
+      };
+      
+      const optionIdMap = {
+        'email': 'emailOption',
+        'sms': 'smsOption',
+        'discord': 'discordOption',
+        'telegram': 'telegramOption'
+      };
+      
+      const checkboxId = checkboxIdMap[type];
+      if (!checkboxId) {
+        console.error('Unknown channel type:', type);
+        return;
+      }
+      
+      const checkbox = document.getElementById(checkboxId);
+      if (!checkbox) {
+        console.error('Checkbox not found for type:', type, 'ID:', checkboxId);
+        return;
+      }
+      
+      // Don't allow toggling if disabled (duplicate)
+      if (checkbox.disabled) {
+        return;
+      }
+      
+      const valueInput = document.getElementById(type + 'Value');
+      const optionEl = document.getElementById(optionIdMap[type]);
+      
+      if (checkbox.checked) {
+        if (valueInput) valueInput.style.display = 'block';
+        if (optionEl) optionEl.classList.add('selected');
+        if (!selectedChannels.find(c => c.type === type)) {
+          selectedChannels.push({ type, value: null });
+        }
+        
+        if (valueInput && valueInput.value.trim()) {
+          checkDuplicate(type);
+        }
+      } else {
+        if (valueInput) {
+          valueInput.style.display = 'none';
+          valueInput.value = '';
+        }
+        if (optionEl) {
+          optionEl.classList.remove('selected');
+          optionEl.style.opacity = '1';
+          optionEl.style.cursor = 'pointer';
+        }
+        selectedChannels = selectedChannels.filter(c => c.type !== type);
+        
+        const warningEl = document.getElementById(type + 'DuplicateWarning');
+        if (warningEl) {
+          warningEl.style.display = 'none';
+          warningEl.textContent = '';
+        }
+      }
+      
+      setTimeout(sendHeightToParent, 50);
+    }
+    
+    async function handleStep3() {
+      const errorEl = document.getElementById('channelsError');
+      
+      selectedChannels = [];
+      const checkboxMap = {
+        'email': 'chEmail',
+        'sms': 'chSMS',
+        'discord': 'chDiscord',
+        'telegram': 'chTelegram'
+      };
+      
+      for (const [type, checkboxId] of Object.entries(checkboxMap)) {
+        const checkbox = document.getElementById(checkboxId);
+        if (checkbox && checkbox.checked && !checkbox.disabled) {
+          selectedChannels.push({ type, value: null });
+        }
+      }
+      
+      let validatedChannels = [];
+      const errors = [];
+      
+      for (const ch of selectedChannels) {
+        const checkboxId = ch.type === 'email' ? 'chEmail' : ch.type === 'sms' ? 'chSMS' : ch.type === 'discord' ? 'chDiscord' : 'chTelegram';
+        const checkbox = document.getElementById(checkboxId);
+        
+        if (checkbox && checkbox.disabled) {
+          continue;
+        }
+        
+        if (ch.type === 'email') {
+          const val = document.getElementById('emailValue').value.trim();
+          if (!val) {
+            errors.push('Please enter an email address');
+          } else {
+            validatedChannels.push({ ...ch, value: val });
+          }
+        } else if (ch.type === 'sms') {
+          const val = document.getElementById('smsValue').value.trim();
+          if (!val) {
+            errors.push('Please enter a phone number');
+          } else {
+            validatedChannels.push({ ...ch, value: val });
+          }
+        } else {
+          validatedChannels.push(ch);
+        }
+      }
+      
+      if (errors.length > 0) {
+        errorEl.textContent = errors.join('. ');
+        return;
+      }
+      
+      if (validatedChannels.length === 0) {
+        errorEl.textContent = 'Please select at least one notification channel';
+        return;
+      }
+      
+      let hasDuplicates = false;
+      const duplicateChecks = [];
+      
+      for (const ch of validatedChannels) {
+        if ((ch.type === 'email' || ch.type === 'sms') && ch.value) {
+          duplicateChecks.push(
+            fetch(apiBase + '/check-duplicate/' + encodeURIComponent(bondAddress) + '?type=' + ch.type + '&value=' + encodeURIComponent(ch.value))
+              .then(response => response.json())
+              .then(data => ({ ch, data, isDuplicate: data.isDuplicate }))
+              .catch(error => {
+                console.error('Error checking duplicate for', ch.type, ':', error);
+                return { ch, data: null, isDuplicate: false, error: true };
+              })
+          );
+        }
+      }
+      
+      const duplicateResults = await Promise.all(duplicateChecks);
+      
+      for (const result of duplicateResults) {
+        if (result.error) {
+          continue;
+        }
+        
+        if (result.isDuplicate) {
+          hasDuplicates = true;
+          const ch = result.ch;
+          const message = result.data.isVerified 
+            ? '⚠️ This ' + ch.type + ' is already verified for this validator. Please use a different ' + ch.type + '.'
+            : '⚠️ This ' + ch.type + ' is already added for this validator. Please use a different ' + ch.type + '.';
+          
+          const checkbox = document.getElementById(ch.type === 'email' ? 'chEmail' : 'chSMS');
+          const optionEl = document.getElementById(ch.type === 'email' ? 'emailOption' : 'smsOption');
+          const warningEl = document.getElementById(ch.type + 'DuplicateWarning');
+          
+          console.log('Duplicate found for', ch.type, 'Warning element:', warningEl);
+          
+          if (checkbox) {
+            checkbox.disabled = true;
+            checkbox.checked = false;
+          }
+          if (optionEl) {
+            optionEl.style.opacity = '0.5';
+            optionEl.style.cursor = 'not-allowed';
+            optionEl.classList.remove('selected');
+            optionEl.classList.add('disabled');
+          }
+          if (warningEl) {
+            warningEl.textContent = message;
+            warningEl.style.display = 'block';
+            console.log('Warning displayed for', ch.type);
+          } else {
+            console.error('Warning element not found for', ch.type, 'Expected ID:', ch.type + 'DuplicateWarning');
+          }
+          
+          validatedChannels = validatedChannels.filter(vc => !(vc.type === ch.type && vc.value === ch.value));
+          
+          selectedChannels = selectedChannels.filter(sc => !(sc.type === ch.type && sc.value === ch.value));
+        }
+      }
+      
+      if (hasDuplicates) {
+        console.log('Duplicates found, blocking submission. Remaining channels:', validatedChannels.length);
+        if (validatedChannels.length === 0) {
+          errorEl.textContent = 'Please select at least one valid notification channel.';
+          return;
+        }
+        errorEl.textContent = '';
+        return;
+      }
+      
+      console.log('No duplicates found, proceeding with channels:', validatedChannels);
+      
+      selectedChannels = validatedChannels;
+      
+      errorEl.textContent = '';
+      goToStep(4);
+      
+      try {
+        const response = await fetch(apiBase + '/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bond_address: bondAddress,
+            threshold: threshold,
+            check_frequency: 900,
+            notification_channels: selectedChannels
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create subscription');
+        }
+        
+        if (data.channels && Array.isArray(data.channels)) {
+          const duplicateChannels = data.channels.filter(c => c.isDuplicate || c.error);
+          if (duplicateChannels.length > 0) {
+            const duplicateMessages = duplicateChannels.map(c => {
+              if (c.isDuplicate) {
+                return c.type.toUpperCase() + ' is already ' + (c.isVerified ? 'verified' : 'added') + ' for this validator.';
+              }
+              return c.error || c.type.toUpperCase() + ' error';
+            });
+            
+            errorEl.textContent = duplicateMessages.join(' ');
+            goToStep(3);
+            
+            duplicateChannels.forEach(c => {
+              const checkbox = document.getElementById(c.type === 'email' ? 'chEmail' : c.type === 'sms' ? 'chSMS' : null);
+              const optionEl = document.getElementById(c.type === 'email' ? 'emailOption' : c.type === 'sms' ? 'smsOption' : null);
+              const warningEl = document.getElementById(c.type + 'DuplicateWarning');
+              
+              if (checkbox) {
+                checkbox.disabled = true;
+                checkbox.checked = false;
+              }
+              if (optionEl) {
+                optionEl.style.opacity = '0.5';
+                optionEl.style.cursor = 'not-allowed';
+                optionEl.classList.remove('selected');
+                optionEl.classList.add('disabled');
+              }
+              if (warningEl) {
+                warningEl.textContent = c.isDuplicate 
+                  ? '⚠️ This ' + c.type + ' is already ' + (c.isVerified ? 'verified' : 'added') + ' for this validator.'
+                  : '⚠️ ' + (c.error || 'Error');
+                warningEl.style.display = 'block';
+              }
+              
+              const valueInput = document.getElementById(c.type + 'Value');
+              if (valueInput) {
+                valueInput.value = '';
+              }
+            });
+            
+            selectedChannels = selectedChannels.filter(ch => {
+              return !duplicateChannels.some(dc => dc.type === ch.type && dc.value === ch.value);
+            });
+            
+            return;
+          }
+        }
+        
+        subscriptionId = data.subscription.id;
+        
+        const discordChannel = selectedChannels.find(c => c.type === 'discord');
+        const telegramChannel = selectedChannels.find(c => c.type === 'telegram');
+        const emailChannel = selectedChannels.find(c => c.type === 'email');
+        const smsChannel = selectedChannels.find(c => c.type === 'sms');
+        const needsVerification = discordChannel || telegramChannel || emailChannel || smsChannel;
+        
+        if (needsVerification) {
+          if (data.channels && Array.isArray(data.channels)) {
+            const telegramChannelData = data.channels.find(c => c.type === 'telegram');
+            if (telegramChannelData) {
+              telegramVerificationCode = telegramChannelData.verification_code;
+              telegramBotUrl = telegramChannelData.bot_url;
+              telegramChannelId = telegramChannelData.channel_id;
+            }
+            
+            const discordChannelData = data.channels.find(c => c.type === 'discord');
+            if (discordChannelData) {
+              discordOAuthUrl = discordChannelData.oauth_url;
+              discordChannelId = discordChannelData.channel_id;
+            }
+            
+            const emailChannelData = data.channels.find(c => c.type === 'email');
+            if (emailChannelData) {
+              emailChannelId = emailChannelData.channel_id;
+            }
+            
+            const smsChannelData = data.channels.find(c => c.type === 'sms');
+            if (smsChannelData) {
+              smsChannelId = smsChannelData.channel_id;
+            }
+          }
+          
+          goToStep(5);
+          setupVerification(discordChannel, telegramChannel, selectedChannels);
+        } else {
+          goToStep(5);
+          document.getElementById('verificationContent').style.display = 'none';
+          document.getElementById('allVerified').style.display = 'block';
+          if (window.sendHeightToParent) {
+            setTimeout(window.sendHeightToParent, 50);
+          }
+          setTimeout(() => {
+            if (window.parent !== window) {
+              window.parent.postMessage({ type: 'close-widget' }, '*');
+            }
+          }, 5000);
+        }
+        
+      } catch (error) {
+        document.getElementById('step4').innerHTML = 
+          '<div class="error"><h2>Error</h2><p>' + error.message + '</p><button onclick="goToStep(3)" class="secondary">Go Back</button></div>';
+      }
+    }
+  </script>
+</body>
+</html>
+
