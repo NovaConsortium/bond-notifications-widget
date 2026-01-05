@@ -7,10 +7,7 @@ const connectDB = async () => {
       throw new Error('DATABASE_URL environment variable is required');
     }
     
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI);
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);

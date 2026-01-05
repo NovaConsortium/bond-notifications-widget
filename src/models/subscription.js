@@ -74,7 +74,7 @@ const notificationChannelSchema = new mongoose.Schema({
 });
 
 notificationChannelSchema.index(
-  { subscription_id: 1, channel_type: 1, channel_value: 1 },
+  { subscription_id: 1, channel_type: 1 },
   { unique: true }
 );
 

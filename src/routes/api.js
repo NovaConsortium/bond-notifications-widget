@@ -542,38 +542,8 @@ router.get('/auth/discord/callback', async (req, res) => {
 });
 
 router.get('/auth/discord/bot-callback', async (req, res) => {
-  try {
-    const { guild_id, code } = req.query;
-    const widgetDomain = process.env.WIDGET_DOMAIN || 'https://widgets-api.novaconsortium.org';
-
-    const recentChannel = await NotificationChannel.findOne({
-      channel_type: 'discord',
-      is_verified: false
-    }).sort({ createdAt: -1 });
-
-    if (recentChannel && recentChannel.verification_code) {
-      const stateData = discordOAuth.getState(recentChannel.verification_code);
-      
-      if (stateData && stateData.channel_id === recentChannel._id.toString()) {
-        await NotificationChannel.findByIdAndUpdate(
-          recentChannel._id,
-          { 
-            is_verified: true,
-            verification_code: null
-          },
-          { new: true }
-        );
-
-        return res.redirect(`${widgetDomain}/widget?discord_verified=true&channel_id=${recentChannel._id}`);
-      }
-    }
-
-    res.redirect(`${widgetDomain}/widget?discord_bot_added=true`);
-  } catch (error) {
-    console.error('Discord bot callback error:', error);
-    const widgetDomain = process.env.WIDGET_DOMAIN || 'https://widgets-api.novaconsortium.org';
-    res.redirect(`${widgetDomain}/widget?error=bot_callback_failed`);
-  }
+  const widgetDomain = process.env.WIDGET_DOMAIN || 'https://widgets-api.novaconsortium.org';
+  res.redirect(`${widgetDomain}/widget?discord_bot_added=true`);
 });
 
 router.post('/auth/discord/url', async (req, res) => {

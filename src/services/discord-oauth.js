@@ -109,7 +109,26 @@ class DiscordOAuthService {
       throw new Error('Discord client ID not configured');
     }
 
-    return `https://discord.com/oauth2/authorize?client_id=${this.clientId}`;
+    const isLocal = process.env.NODE_ENV !== 'production' || process.env.PORT === '3001' || !process.env.PORT;
+    let botRedirectUri;
+    if (process.env.DISCORD_BOT_REDIRECT_URI) {
+      botRedirectUri = process.env.DISCORD_BOT_REDIRECT_URI;
+    } else if (isLocal) {
+      const port = process.env.PORT || '3001';
+      botRedirectUri = `http://localhost:${port}/api/auth/discord/bot-callback`;
+    } else {
+      const widgetDomain = process.env.WIDGET_DOMAIN || 'https://widgets-api.novaconsortium.org';
+      botRedirectUri = `${widgetDomain}/api/auth/discord/bot-callback`;
+    }
+
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      permissions: '2048',
+      scope: 'bot',
+      redirect_uri: botRedirectUri
+    });
+
+    return `https://discord.com/api/oauth2/authorize?${params.toString()}`;
   }
 }
 

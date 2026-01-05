@@ -69,7 +69,7 @@ TELEGRAM_BOT_TOKEN=your_bot_token
 Add the script and a trigger button to your page:
 
 ```html
-<script src="https://widgets-api.novaconsortium.org/widget.js"></script>
+<script src="https://widgets-api.novaconsortium.org/jpool-widget.js"></script>
 <button data-widget>Get Notified</button>
 ```
 

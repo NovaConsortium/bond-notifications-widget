@@ -49,16 +49,17 @@ try {
   widgetTemplate = '<!DOCTYPE html><html><body><h1>Widget template not found</h1></body></html>';
 }
 
-function renderWidgetHtml() {
+function renderWidgetHtml(voteKey = '') {
   const apiBase = process.env.API_BASE || 'https://widgets-api.novaconsortium.org/api';
   
   return widgetTemplate
     .replace('{{API_BASE}}', apiBase)
-    .replace('{{BOND_ADDRESS_SCRIPT}}', getBondAddressScript);
+    .replace('{{BOND_ADDRESS_SCRIPT}}', getBondAddressScript)
+    .replace('{{VOTE_KEY}}', voteKey);
 }
 
 router.get('/:voteKey', (req, res) => {
-  res.send(renderWidgetHtml());
+  res.send(renderWidgetHtml(req.params.voteKey));
 });
 
 router.get('/', (req, res) => {
