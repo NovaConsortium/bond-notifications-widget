@@ -27,8 +27,7 @@ Create a `.env` file based on `example.env`:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `PORT` | Server port | `3001` |
-| `WIDGET_DOMAIN` | Public URL of your widget server | - |
-| `API_BASE` | Base URL for API calls | `https://widgets-api.novaconsortium.org/api` |
+| `WIDGET_DOMAIN` | Public URL of your widget server | `https://widgets-api.novaconsortium.org/api` |
 
 ### Notification Channels (Optional)
 
